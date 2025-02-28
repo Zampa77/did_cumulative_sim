@@ -128,8 +128,45 @@ ggplot(df_plot, aes(x = time, y = att_adj)) +
   geom_hline(yintercept = 0.1, col='red', linetype='dashed', size=1.1) +
   geom_hline(yintercept = 0, col='grey') +
   geom_point() +
-  geom_errorbar(aes(ymin = att_adj - 1.96 * se, ymax = att_adj + 1.96 * se), width = 0.2, alpha=0.5) +
+  geom_errorbar(aes(ymin = att_adj - 1.96 * se, ymax = att_adj + 1.96 * se), width = 0.2, alpha=0.4) +
   theme_bw() +
-  labs(title = "Callaway & Sant'Anna DiD: Dynamic Effects",
+  labs(title = "Beta retrieval from Cumulative Outcomes",
        x = "Time Since Treatment", y = "ATT (Treatment Effect)") 
+
+# In this case, the slope of regressin att change over time also gives the treatment effect:
+ols <- lm(df_plot$att ~ df_plot$time)
+# Extract the slope:
+slope <- unname(ols$coefficients[2])
+# Ratio of slope over Beta is approximately 1:
+slope/beta
+
+# Create a data frame for the lines:
+line_data <- data.frame(
+  intercept = c(0.1, 0.1),
+  slope = c(slope, beta),
+  label = c("OLS Slope", "True Beta") # Legend labels
+)
+
+# Plot:
+ggplot(df_plot, aes(x = time, y = att)) +
+  geom_abline(data = line_data, aes(intercept = intercept, slope = slope, color = label), 
+              linetype = 'dashed', size = 1.1, alpha = 0.5) +
+  geom_hline(yintercept = 0, col = 'grey') +
+  geom_point() +
+  theme_bw() +
+  scale_color_manual(values = c("OLS Slope" = "red", "True Beta" = "blue")) +  # Define colors in legend
+  labs(title = "Regression of ATT over time, OLS slope vs True Beta",
+       x = "Time Since Treatment", y = "ATT (Treatment Effect)", color = "Effects:") +  # Legend title
+  theme(legend.position = "bottom")  # Adjust legend position if needed
+
+
+
+
+
+
+
+
+
+
+
 
