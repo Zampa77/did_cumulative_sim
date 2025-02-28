@@ -8,7 +8,7 @@ set.seed(12345)
 
 # PARAMETERS: Number of individuals and time periods˙
 N <- 500    # Number of individuals
-T_periods <- 25  # Number of time periods
+T_periods <- 100  # Number of time periods
 
 # Create individual-level data
 ids <- 1:N
@@ -41,6 +41,7 @@ df <- df %>%
 # - The flow outcome Y is defined as the period-to-period change in S.
 base_growth <- 1
 beta <- 0.1  # very small per-period treatment effect
+dynam <- 0.1 # dynamic evolution of beta
 
 # Initialize latent stock S matrix
 S <- matrix(NA, nrow = N, ncol = T_periods)
@@ -50,7 +51,7 @@ for(i in 1:N){
   for(t in 2:T_periods){
     treat_effect <- 0
     if(t >= df_ind$treatment_time[i]) {
-      treat_effect <- beta
+      treat_effect <- beta+(t*dynam)
     }
     # Stock evolves by adding base growth, any treatment effect, and noise
     S[i,t] <- S[i, t-1] + base_growth + treat_effect + rnorm(1, 0, 1)
@@ -122,14 +123,8 @@ df_plot <- data.frame(
 df_plot <- df_plot[df_plot$time>0,]
 # for each time period, divide by time
 df_plot$att_adj <- df_plot$att/df_plot$time
-
-# make plot - B is retrieved
-ggplot(df_plot, aes(x = time, y = att_adj)) +
-  geom_hline(yintercept = 0.1, col='red', linetype='dashed', size=1.1) +
-  geom_hline(yintercept = 0, col='grey') +
-  geom_point() +
-  geom_errorbar(aes(ymin = att_adj - 1.96 * se, ymax = att_adj + 1.96 * se), width = 0.2, alpha=0.5) +
-  theme_bw() +
-  labs(title = "Callaway & Sant'Anna DiD: Dynamic Effects",
-       x = "Time Since Treatment", y = "ATT (Treatment Effect)") 
+first_diff <- diff(df_plot$att)
+betas <-sapply(5:T_periods, function(t) beta+(t*dynam))
+plot(betas, first_diff)
+summary(lm(betas ~ first_diff)) # there you go, 1 to 1
 
