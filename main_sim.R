@@ -118,12 +118,12 @@ df_plot <- data.frame(
   se = agg_Ycum$se.egt         # Standard errors
 )
 
-# only select treatment periods
+# Only select treatment periods
 df_plot <- df_plot[df_plot$time>0,]
-# for each time period, divide by time
+# For each time period, divide by time
 df_plot$att_adj <- df_plot$att/df_plot$time
 
-# make plot - B is retrieved
+# Make plot - Beta is retrieved
 ggplot(df_plot, aes(x = time, y = att_adj)) +
   geom_hline(yintercept = 0.1, col='red', linetype='dashed', size=1.1) +
   geom_hline(yintercept = 0, col='grey') +

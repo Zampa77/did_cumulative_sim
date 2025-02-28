@@ -112,19 +112,22 @@ event_study_Ycum <- ggdid(agg_Ycum)
 print(event_study_Y)
 print(event_study_Ycum)
 
-# retrieve Beta
+# Retrieve Betas
 df_plot <- data.frame(
   time = agg_Ycum$egt,         # Event time
   att = agg_Ycum$att.egt,      # Treatment effect estimates
   se = agg_Ycum$se.egt         # Standard errors
 )
 
-# only select treatment periods
+# Only select treatment periods
 df_plot <- df_plot[df_plot$time>0,]
-# for each time period, divide by time
-df_plot$att_adj <- df_plot$att/df_plot$time
+
+# Get first differences of ATTs
 first_diff <- diff(df_plot$att)
+# re-simulate evolving Betas
 betas <-sapply(5:T_periods, function(t) beta+(t*dynam))
+# Plot Betas vs First differences
 plot(betas, first_diff)
-summary(lm(betas ~ first_diff)) # there you go, 1 to 1
+# Regress one over the other
+summary(lm(betas ~ first_diff)) 
 
