@@ -6,9 +6,9 @@ library(ggplot2)
 # Set seed for reproducibility
 set.seed(12345)
 
-# PARAMETERS: Number of individuals and time periods
+# PARAMETERS: Number of individuals and time periods˙
 N <- 500    # Number of individuals
-T_periods <- 15  # Number of time periods
+T_periods <- 25  # Number of time periods
 
 # Create individual-level data
 ids <- 1:N
@@ -111,4 +111,25 @@ event_study_Ycum <- ggdid(agg_Ycum)
 print(event_study_Y)
 print(event_study_Ycum)
 
+# retrieve Beta
+df_plot <- data.frame(
+  time = agg_Ycum$egt,         # Event time
+  att = agg_Ycum$att.egt,      # Treatment effect estimates
+  se = agg_Ycum$se.egt         # Standard errors
+)
+
+# only select treatment periods
+df_plot <- df_plot[df_plot$time>0,]
+# for each time period, divide by time
+df_plot$att_adj <- df_plot$att/df_plot$time
+
+# make plot - B is retrieved
+ggplot(df_plot, aes(x = time, y = att_adj)) +
+  geom_hline(yintercept = 0.1, col='red', linetype='dashed', size=1.1) +
+  geom_hline(yintercept = 0, col='grey') +
+  geom_point() +
+  geom_errorbar(aes(ymin = att_adj - 1.96 * se, ymax = att_adj + 1.96 * se), width = 0.2, alpha=0.5) +
+  theme_bw() +
+  labs(title = "Callaway & Sant'Anna DiD: Dynamic Effects",
+       x = "Time Since Treatment", y = "ATT (Treatment Effect)") + theme_p
 
