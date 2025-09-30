@@ -41,7 +41,8 @@ df <- df %>%
 # - The flow outcome Y is defined as the period-to-period change in S.
 base_growth <- 1
 beta <- 0.1  # very small per-period treatment effect
-dynam <- 0.1 # dynamic evolution of beta
+dynam <- 0.2 # dynamic evolution of beta (fixed)
+# alternatively, defined dynmaci operator of variable time (t)
 
 # Initialize latent stock S matrix
 S <- matrix(NA, nrow = N, ncol = T_periods)
@@ -51,7 +52,7 @@ for(i in 1:N){
   for(t in 2:T_periods){
     treat_effect <- 0
     if(t >= df_ind$treatment_time[i]) {
-      treat_effect <- beta+(t*dynam)
+      treat_effect <- beta+((t+1-df_ind$treatment_time[i])*dynam)
     }
     # Stock evolves by adding base growth, any treatment effect, and noise
     S[i,t] <- S[i, t-1] + base_growth + treat_effect + rnorm(1, 0, 1)
@@ -125,9 +126,12 @@ df_plot <- df_plot[df_plot$time>0,]
 # Get first differences of ATTs
 first_diff <- diff(df_plot$att)
 # re-simulate evolving Betas
-betas <-sapply(5:T_periods, function(t) beta+(t*dynam))
+betas <- sapply(5:T_periods, function(t) beta + (t * dynam))
 # Plot Betas vs First differences
 plot(betas, first_diff)
 # Regress one over the other
 summary(lm(betas ~ first_diff)) 
+
+
+
 

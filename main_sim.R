@@ -134,9 +134,11 @@ ggplot(df_plot, aes(x = time, y = att_adj)) +
        x = "Time Since Treatment", y = "ATT (Treatment Effect)") 
 
 # In this case, the slope of regressin att change over time also gives the treatment effect:
-ols <- lm(df_plot$att ~ df_plot$time)
+time <-  df_plot$time
+atts <- df_plot$att
+ols <- lm(atts ~ time)
 # Extract the slope:
-slope <- unname(ols$coefficients[2])
+slope <- unname(ols$coefficients['time'])
 # Ratio of slope over Beta is approximately 1:
 slope/beta
 
